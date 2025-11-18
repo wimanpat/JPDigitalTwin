@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+{% set title = "Command Center" %}
+
+<h1 class="page-title">Command Center</h1>
+
+<div class="status-box">
+    <div class="status-title">Operational Status</div>
+    <div class="status-value">REAL-TIME MONITORING</div>
+    <div class="status-update">Last Updated: {{ last_updated or "2025-10-13 12:00:00 UTC" }}</div>
+</div>
+
+<div class="grid">
+    <div class="action-card">Topology</div>
+    <div class="action-card">Operations</div>
+    <div class="action-card">System Settings</div>
+    <div class="action-card empty"></div>
+</div>
+
+<div class="map-box">
+    <div class="status-title">Operational Snapshot: Simplified Grid Map</div>
+    <div id="gridMap" class="map-placeholder">
+        Loading Grid...
+    </div>
+</div>
+
+{% endblock %}

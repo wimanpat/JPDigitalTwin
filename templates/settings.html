@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block content %}
+{% set title = "System Settings" %}
+
+<h1 class="page-title">System Settings - Algorithm and Cost Control</h1>
+
+<div class="settings-container">
+
+    <!-- ========================= -->
+    <!-- TAB HEADERS -->
+    <!-- ========================= -->
+    <div class="settings-tabs">
+        <div class="settings-tab active" data-tab="algorithm">Algorithm</div>
+        <div class="settings-tab" data-tab="economics">Economics</div>
+        <div class="settings-tab" data-tab="access">Access Control</div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- TAB: ALGORITHM -->
+    <!-- ========================= -->
+    <div class="settings-content active" id="tab-algorithm">
+
+        <h3 class="settings-section-title">Computational Model Configuration</h3>
+
+        <div class="settings-row">
+            <label>Prediction Model</label>
+            <select>
+                <option>Prophet</option>
+                <option>ARIMA</option>
+                <option>LSTM Neural Network</option>
+            </select>
+        </div>
+
+        <div class="settings-row">
+            <label>Computational Unit (Optimization)</label>
+            <select>
+                <option>Classical (Cloud GPU)</option>
+                <option>Quantum (D-Wave QA)</option>
+                <option>Hybrid (Classical + QA)</option>
+            </select>
+        </div>
+
+        <div class="settings-row">
+            <label>Optimization Solver Libraries</label>
+            <input type="text" value="CVXPY, GLPK (for linear relaxation)">
+        </div>
+
+        <div class="settings-row">
+            <label>Theme</label>
+            <select id="themeSelector">
+                <option value="light">Light Mode</option>
+                <option value="dark">Dark Mode</option>
+            </select>
+        </div>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- TAB: ECONOMICS -->
+    <!-- ========================= -->
+    <div class="settings-content" id="tab-economics">
+
+        <h3 class="settings-section-title">Economic Model Parameters</h3>
+
+        <div class="settings-row">
+            <label>Energy Market Mode</label>
+            <select>
+                <option>Day-Ahead Market</option>
+                <option>Real-Time Market</option>
+                <option>Hybrid</option>
+            </select>
+        </div>
+
+        <div class="settings-row">
+            <label>Forecast Horizon</label>
+            <select>
+                <option>24 Hours</option>
+                <option>48 Hours</option>
+                <option>7 Days</option>
+            </select>
+        </div>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- TAB: ACCESS CONTROL -->
+    <!-- ========================= -->
+    <div class="settings-content" id="tab-access">
+
+        <h3 class="settings-section-title">Access Control & Permissions</h3>
+
+        <div class="settings-row">
+            <label>Admin Access</label>
+            <select>
+                <option>Full Control</option>
+                <option>Configuration Only</option>
+                <option>Read-Only</option>
+            </select>
+        </div>
+
+        <div class="settings-row">
+            <label>User Authentication</label>
+            <select>
+                <option>Password Only</option>
+                <option>2FA Enabled</option>
+                <option>OAuth / SSO</option>
+            </select>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+{% set title = "Operations View" %}
+
+<h1 class="page-title">Operations View</h1>
+
+<div class="operations-grid">
+
+    <div class="left-column">
+
+        <div class="card">
+            <h3>Live Metrics</h3>
+            <p><b>Current Load:</b> 312 MW</p>
+            <p><b>Frequency:</b> 50.02 Hz</p>
+            <p><b>Avg Voltage:</b> 230.5 kV</p>
+            <p><b>Generation Output:</b> 325 MW</p>
+        </div>
+
+        <div class="card">
+            <h3>Recent Alerts</h3>
+            <ul class="event-list">
+                <li>⚠ Transformer T3 near max capacity</li>
+                <li>⚠ Voltage dip detected at Bus B7</li>
+                <li>✔ All lines stable</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <div class="right-column">
+        <div class="card large">
+            <h3>Real-Time Grid Status</h3>
+            <div class="diagram-area">
+                <svg width="100%" height="100%">
+                    <circle cx="100" cy="120" r="6" fill="green" />
+                    <circle cx="200" cy="200" r="6" fill="yellow" />
+                    <circle cx="300" cy="150" r="6" fill="red" />
+
+                    <line x1="100" y1="120" x2="200" y2="200" stroke="#ccc" stroke-width="2" />
+                    <line x1="200" y1="200" x2="300" y2="150" stroke="#ccc" stroke-width="2" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
