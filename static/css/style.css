@@ -318,3 +318,27 @@ h1, h2, h3, h4, h5, h6, p, span, label {
 .dark-mode .action-card:hover {
     background: #ffffff0c;
 }
+
+/*Execute button*/
+button.execute {
+    background-color: #0f62fe;
+    color: white;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-size: 15px;
+}
+button.execute:hover {
+    background-color: #0353e9;
+}
+
+.exec-output {
+    margin-top: 12px;
+    font-family: monospace;
+    background: #eee;
+    padding: 8px;
+    border-radius: 6px;
+    white-space: pre-wrap;
+}

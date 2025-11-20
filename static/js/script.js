@@ -85,3 +85,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const execBtn = document.getElementById("executeBtn");
+    const execOutput = document.getElementById("execOutput");
+
+    if (execBtn) {
+        execBtn.addEventListener("click", async () => {
+            execOutput.textContent = "Running Gurobi solver...";
+
+            const res = await fetch("/run-solver", { method: "POST" });
+            const data = await res.json();
+
+            if (!data.ok) {
+                execOutput.textContent = "Error: " + data.error;
+                return;
+            }
+
+            execOutput.textContent = data.output;
+        });
+    }
+
+});
