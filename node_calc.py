@@ -3,7 +3,7 @@ import importlib
 from pathlib import Path
 from io import StringIO
 
-repo_src = Path(__file__).resolve().parent / "backend" / "NirajDwave" / "src"
+repo_src = Path(__file__).resolve().parent / "backend" #/ "NirajDwave" / "src" <-- uncomment to use full NirajDwave repo and full node calculation functionality
 sys.path.insert(0, str(repo_src))
 
 
