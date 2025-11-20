@@ -31,14 +31,16 @@
             </select>
         </div>
 
-        <div class="settings-row">
-            <label>Computational Unit (Optimization)</label>
-            <select>
-                <option>Classical (Cloud GPU)</option>
-                <option>Quantum (D-Wave QA)</option>
-                <option>Hybrid (Classical + QA)</option>
-            </select>
-        </div>
+<div class="settings-row">
+    <label>Select Solver</label>
+    <select id="solverSelector">
+        <option value="gurobi">Local Gurobi (CPU)</option>
+        <option value="cqm">D-Wave CQM (Hybrid Cloud)</option>
+        <option value="nlq">D-Wave Quantum Annealing</option>
+        <option value="dummy">Dummy Test Solver (No Dependencies)</option>
+    </select>
+</div>
+
 
         <div class="settings-row">
             <label>Optimization Solver Libraries</label>

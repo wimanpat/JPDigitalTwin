@@ -108,3 +108,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 });
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    const solverSelector = document.getElementById("solverSelector");
+
+    if (solverSelector) {
+        solverSelector.addEventListener("change", async () => {
+            await fetch("/set-solver", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ solver: solverSelector.value })
+            });
+
+            alert("Solver selection saved!");
+        });
+    }
+});

@@ -1,70 +1,53 @@
 import sys
 import importlib
-from io import StringIO
 from pathlib import Path
+from io import StringIO
 
-# Add external repo to PYTHONPATH
 repo_src = Path(__file__).resolve().parent / "backend" / "NirajDwave" / "src"
-if repo_src not in sys.path:
-    sys.path.insert(0, str(repo_src))
+sys.path.insert(0, str(repo_src))
 
-def run_gurobi_raw_output():
-    """
-    Runs the local Gurobi solver AND captures its console output.
-    Returns: A big raw text string.
-    """
 
-    # Load solver module even though file starts with number
-    solver = importlib.import_module("FullModelv1.15KNodeGurobiLocal")
-
-    # Capture stdout
+def capture_output(func, *args):
+    """Utility that captures printed output from a solver."""
     buffer = StringIO()
-    sys_stdout_original = sys.stdout
+    real_stdout = sys.stdout
     sys.stdout = buffer
 
     try:
-        model, g, s, x = solver.build_and_solve_gurobi()
-
-        if model and model.Status == 2:  # GRB.OPTIMAL
-            solver.print_solution_gurobi(model, g, s, x)
-
+        func(*args)
+    except Exception as e:
+        sys.stdout = real_stdout
+        raise e
     finally:
-        sys.stdout = sys_stdout_original
+        sys.stdout = real_stdout
 
-    # Raw solver text output
     return buffer.getvalue()
 
-def import_solver(module_name):
-    """
-    Dynamically import solver files whose names start with numbers.
-    Example module_name: "FullModelv1.15KNodeGurobiLocal"
-    """
-    return importlib.import_module(module_name)
+
+# ====== LOCAL GUROBI SOLVER ======
+def run_gurobi_raw_output():
+    solver = importlib.import_module("FullModelv1.15KNodeGurobiLocal")
+
+    def run():
+        model, g, s, x = solver.build_and_solve_gurobi()
+        if model.Status == 2:
+            solver.print_solution_gurobi(model, g, s, x)
+
+    return capture_output(run)
 
 
-def calculate(data, model="FullModel-Gurobi"):
-    """
-    data = Python dictionary from upload
-    model = one of:
-        - "FullModel-Gurobi"
-        - "FullModel-CQM"
-        - "FullModel-NLQ"
-    """
+# ====== D-WAVE HYBRID CQM SOLVER ======
+def run_cqm_output():
+    solver = importlib.import_module("FullModelv1.15KNodeCQM")
+    return capture_output(solver.main)   # Or solver.run(), depending on file
 
-    # MODEL 1: Gurobi (Local classical solver)
-    if model == "FullModel-Gurobi":
-        solver = import_solver("FullModelv1.15KNodeGurobiLocal")
-        return solver.main(data) if hasattr(solver, "main") else solver.run(data)
 
-    # MODEL 2: CQM (Quantum Hybrid - requires keys)
-    if model == "FullModel-CQM":
-        solver = import_solver("FullModelv1.15KNodeCQM")
-        return solver.main(data) if hasattr(solver, "main") else solver.run(data)
+# ====== D-WAVE NLSAMPLER (QUANTUM ANNEALER) ======
+def run_nlq_output():
+    solver = importlib.import_module("FullModelv1.15KNodeOnNLSampler")
+    return capture_output(solver.main)
 
-    # MODEL 3: OnNLSampler (Quantum QA - requires keys)
-    if model == "FullModel-NLQ":
-        solver = import_solver("FullModelv1.15KNodeOnNLSampler")
-        return solver.main(data) if hasattr(solver, "main") else solver.run(data)
 
-    else:
-        raise ValueError(f"Unknown model type: {model}")
+# ====== FALLBACK (NO DEPENDENCIES) ======
+def run_dummy_output():
+    return "Dummy solver executed successfully.\n(No Gurobi / No D-Wave required.)"
