@@ -113,6 +113,21 @@ document.addEventListener("DOMContentLoaded", () => {
     // ======================================================================
     // 7. SVG GRID RENDERER  (Topology View + Command Center Snapshot)
     // ======================================================================
+    function getNodeColor(type) {
+    switch (type) {
+        case "Solar": return "#f4d03f";          // Yellow
+        case "Wind": return "#5dade2";           // Blue
+        case "Nuclear": return "#a569bd";        // Purple
+        case "Thermal": return "#e67e22";        // Orange
+        case "Storage": return "#58d68d";        // Green
+        case "Railway": return "#16a085";        // Teal
+        case "Factory": return "#c0392b";        // Red
+        case "Residential": return "#7f8c8d";    // Gray
+        default: return "#000000";               // Black fallback
+    }
+}
+
+
     function renderGridSVG(nodes, edges) {
         if (!mapBox || !nodes) return;
 
@@ -134,10 +149,13 @@ document.addEventListener("DOMContentLoaded", () => {
         // Draw nodes (circles + labels)
         for (const id in nodes) {
             const n = nodes[id];
-            svg += `
-                <circle cx="${n.x}" cy="${n.y}" r="10" fill="#000"></circle>
-                <text x="${n.x + 14}" y="${n.y + 4}" font-size="12">${id}</text>
-            `;
+            const color = getNodeColor(n.type);
+
+        svg += `
+    <circle cx="${n.x}" cy="${n.y}" r="12" fill="${color}" stroke="#222" stroke-width="2"></circle>
+    <text x="${n.x + 18}" y="${n.y + 4}" font-size="13" fill="#000">${id}</text>
+        `;
+
         }
 
         svg += `</svg>`;

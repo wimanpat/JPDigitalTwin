@@ -227,76 +227,80 @@ def explain_cost_logic(g_vars):
 def get_node_positions():
     return {
 
-        # ============================================================
-        # GENERATION (Left side vertical)
-        # ============================================================
-        "TS_S0": {"x": 150, "y": 80,  "type": "Gen"},
-        "TS_S1": {"x": 150, "y": 150, "type": "Gen"},
-        "TS_S2": {"x": 150, "y": 220, "type": "Gen"},
-        "TS_S3": {"x": 150, "y": 290, "type": "Gen"},
-        "TS_S4": {"x": 150, "y": 360, "type": "Gen"},
-        "TS_S5": {"x": 150, "y": 430, "type": "Gen"},
-        "TS_S6": {"x": 150, "y": 500, "type": "Gen"},
-        "TS_S7": {"x": 150, "y": 570, "type": "Gen"},
+        # ============================
+        # GENERATORS (Left Column)
+        # ============================
+        "GEN_SOLAR":   {"x": 120, "y": 120, "type": "Solar"},
+        "GEN_WIND":    {"x": 120, "y": 220, "type": "Wind"},
+        "GEN_NUCLEAR": {"x": 120, "y": 320, "type": "Nuclear"},
+        "GEN_THERMAL": {"x": 120, "y": 420, "type": "Thermal"},
 
-        # ============================================================
-        # SUBSTATION BUSES / TRANSFORMERS (Center spine)
-        # ============================================================
-        "TS_B0": {"x": 350, "y": 250, "type": "Bus"},
-        "TS_B1": {"x": 350, "y": 400, "type": "Bus"},
+        # ============================
+        # STORAGE / BATTERY (Center)
+        # ============================
+        "BATTERY_1": {"x": 350, "y": 220, "type": "Storage"},
+        "BATTERY_2": {"x": 350, "y": 340, "type": "Storage"},
 
-        # ============================================================
-        # LOADS / FEEDERS (Right side)
-        # ============================================================
-        "TS_D0": {"x": 600, "y": 80,  "type": "Load"},
-        "TS_D1": {"x": 600, "y": 130, "type": "Load"},
-        "TS_D2": {"x": 600, "y": 180, "type": "Load"},
-        "TS_D3": {"x": 600, "y": 230, "type": "Load"},
-        "TS_D4": {"x": 600, "y": 280, "type": "Load"},
-        "TS_D5": {"x": 600, "y": 330, "type": "Load"},
-        "TS_D6": {"x": 600, "y": 380, "type": "Load"},
-        "TS_D7": {"x": 600, "y": 430, "type": "Load"},
-        "TS_D8": {"x": 600, "y": 480, "type": "Load"},
-        "TS_D9": {"x": 600, "y": 530, "type": "Load"},
-        "TS_D10": {"x": 750, "y": 200, "type": "Load"},
-        "TS_D11": {"x": 750, "y": 260, "type": "Load"},
-        "TS_D12": {"x": 750, "y": 320, "type": "Load"},
-        "TS_D13": {"x": 750, "y": 380, "type": "Load"},
-        "TS_D14": {"x": 750, "y": 440, "type": "Load"},
+        # ============================
+        # CONSUMERS (Right Column)
+        # ============================
+
+        # Special consumer
+        "LOAD_RAILWAY": {"x": 600, "y": 120, "type": "Railway"},
+
+        # Factories
+        "FACTORY_1": {"x": 600, "y": 200, "type": "Factory"},
+        "FACTORY_2": {"x": 600, "y": 260, "type": "Factory"},
+        "FACTORY_3": {"x": 600, "y": 320, "type": "Factory"},
+        "FACTORY_4": {"x": 600, "y": 380, "type": "Factory"},
+        "FACTORY_5": {"x": 600, "y": 440, "type": "Factory"},
+
+        # Residential (10)
+        "RES_1": {"x": 800, "y": 120, "type": "Residential"},
+        "RES_2": {"x": 800, "y": 170, "type": "Residential"},
+        "RES_3": {"x": 800, "y": 220, "type": "Residential"},
+        "RES_4": {"x": 800, "y": 270, "type": "Residential"},
+        "RES_5": {"x": 800, "y": 320, "type": "Residential"},
+        "RES_6": {"x": 800, "y": 370, "type": "Residential"},
+        "RES_7": {"x": 800, "y": 420, "type": "Residential"},
+        "RES_8": {"x": 800, "y": 470, "type": "Residential"},
+        "RES_9": {"x": 800, "y": 520, "type": "Residential"},
+        "RES_10": {"x": 800, "y": 570, "type": "Residential"},
     }
 
+
 def get_primary_edges():
-    """Defines the real electrical one-line topology, not solver flows"""
     return [
-        # GENERATORS FEED SUBSTATION BUSES
-        ("TS_S0", "TS_B0"),
-        ("TS_S1", "TS_B0"),
-        ("TS_S2", "TS_B0"),
-        ("TS_S3", "TS_B0"),
 
-        ("TS_S4", "TS_B1"),
-        ("TS_S5", "TS_B1"),
-        ("TS_S6", "TS_B1"),
-        ("TS_S7", "TS_B1"),
+        # GENERATION → STORAGE
+        ("GEN_SOLAR", "BATTERY_1"),
+        ("GEN_WIND", "BATTERY_1"),
+        ("GEN_NUCLEAR", "BATTERY_2"),
+        ("GEN_THERMAL", "BATTERY_2"),
 
-        # BUSES FEED LOAD BLOCKS
-        ("TS_B0", "TS_D0"),
-        ("TS_B0", "TS_D1"),
-        ("TS_B0", "TS_D2"),
-        ("TS_B0", "TS_D3"),
-        ("TS_B0", "TS_D4"),
-        ("TS_B0", "TS_D5"),
+        # STORAGE → RAILWAY
+        ("BATTERY_1", "LOAD_RAILWAY"),
 
-        ("TS_B1", "TS_D6"),
-        ("TS_B1", "TS_D7"),
-        ("TS_B1", "TS_D8"),
-        ("TS_B1", "TS_D9"),
-        ("TS_B1", "TS_D10"),
-        ("TS_B1", "TS_D11"),
-        ("TS_B1", "TS_D12"),
-        ("TS_B1", "TS_D13"),
-        ("TS_B1", "TS_D14"),
+        # STORAGE → FACTORIES
+        ("BATTERY_1", "FACTORY_1"),
+        ("BATTERY_1", "FACTORY_2"),
+        ("BATTERY_1", "FACTORY_3"),
+        ("BATTERY_2", "FACTORY_4"),
+        ("BATTERY_2", "FACTORY_5"),
+
+        # STORAGE → RESIDENTIAL BLOCKS
+        ("BATTERY_1", "RES_1"),
+        ("BATTERY_1", "RES_2"),
+        ("BATTERY_1", "RES_3"),
+        ("BATTERY_2", "RES_4"),
+        ("BATTERY_2", "RES_5"),
+        ("BATTERY_2", "RES_6"),
+        ("BATTERY_2", "RES_7"),
+        ("BATTERY_2", "RES_8"),
+        ("BATTERY_1", "RES_9"),
+        ("BATTERY_1", "RES_10"),
     ]
+
 
 
 
