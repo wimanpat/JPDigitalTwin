@@ -7,31 +7,74 @@
 <div class="status-box">
     <div class="status-title">Operational Status</div>
     <div class="status-value">REAL-TIME MONITORING</div>
-    <div class="status-update">Last Updated: {{ last_updated or "2025-10-13 12:00:00 UTC" }}</div>
+    <div class="status-update">
+        Last Updated: {{ last_updated or "2025-10-13 12:00:00 UTC" }}
+    </div>
 </div>
 
 <div class="grid">
-
-    <!-- NOW CLICKABLE -->
     <div class="action-card" data-link="/topology">Topology</div>
     <div class="action-card" data-link="/operations">Operations</div>
     <div class="action-card" data-link="/settings">System Settings</div>
-
     <div class="action-card empty"></div>
 </div>
 
 <div class="card">
-    <h3>Run Full Model</h3>
+    <h3>Run Full Model (Local Gurobi Solver)</h3>
 
     <button id="executeBtn" class="execute">▶ Execute Solver</button>
 
-    <pre id="execOutput" class="exec-output"></pre>
+    <div id="execOutput" class="exec-output"></div>
+</div>
+
+<div class="decision-grid">
+    <div class="card">
+        <h3>Generation Decisions</h3>
+        <table class="decision-table">
+            <thead>
+                <tr>
+                    <th>Unit</th>
+                    <th>Type</th>
+                    <th>Output</th>
+                    <th>Utilization</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="genBody">
+                <!-- Filled by JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h3>Battery Decisions</h3>
+        <table class="decision-table">
+            <thead>
+                <tr>
+                    <th>Battery</th>
+                    <th>SoC</th>
+                    <th>Change</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="batBody">
+                <!-- Filled by JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h3>Energy Balance</h3>
+        <ul id="summaryList" class="decision-list">
+            <!-- Filled by JS -->
+        </ul>
+    </div>
 </div>
 
 <div class="map-box">
     <div class="status-title">Operational Snapshot: Simplified Grid Map</div>
     <div id="gridMap" class="map-placeholder">
-        Loading Grid...
+        <!-- SVG grid goes here -->
     </div>
 </div>
 

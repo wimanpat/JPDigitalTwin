@@ -312,15 +312,24 @@ def get_primary_edges():
 def build_frontend_result(model, g_vars, s_vars, x_vars):
     return {
         "ok": True,
+
+        # For drawing the grid
         "nodes": get_node_positions(),
         "primary_edges": get_primary_edges(),
         "flows": get_visual_flows(x_vars),
+
+        # For driving the UI
+        "generators": build_generator_state(g_vars),
+        "batteries": build_battery_state(s_vars),
+        "summary": build_summary(g_vars, s_vars),
+
+        # Narrative list of actions (you already had this)
         "actions": (
             describe_generators(g_vars)
             + describe_batteries(s_vars)
             + describe_major_flows(x_vars)
             + explain_cost_logic(g_vars)
-        )
+        ),
     }
 
 
@@ -348,6 +357,83 @@ def print_solution_gurobi(model, g_vars, s_vars, x_vars):
     for line in explain_cost_logic(g_vars):
         print(" ", line)
 
+def build_generator_state(g_vars):
+    """Return structured info for each generator, for the UI."""
+    generators = []
+    for i in range(NUM_SOURCES):
+        gen = int(g_vars[i].X)
+        info = SOURCE_DATA[i]
+        max_gen = info["max_gen"]
+        util = gen / max_gen if max_gen else 0.0
+
+        if gen == 0:
+            status = "OFF"
+        elif util < 0.3:
+            status = "LOW"
+        elif util < 0.9:
+            status = "MEDIUM"
+        else:
+            status = "FULL"
+
+        generators.append({
+            "id": f"S{i}",
+            "node": f"TS_S{i}",
+            "type": info["type"],
+            "gen": gen,
+            "max_gen": max_gen,
+            "util_pct": round(util * 100, 1),
+            "status": status,
+        })
+    return generators
+
+
+def build_battery_state(s_vars):
+    """Return structured info for each battery node."""
+    batteries = []
+    for j in range(NUM_BATTERIES):
+        final = int(s_vars[j].X)
+        initial = BATTERY_DATA[j]["initial_cap"]
+        max_cap = BATTERY_DATA[j]["max_cap"]
+        delta = final - initial
+        pct = final / max_cap * 100 if max_cap else 0.0
+
+        if delta < 0:
+            action = f"Discharge {abs(delta):,} units"
+        elif delta > 0:
+            action = f"Charge {delta:,} units"
+        else:
+            action = "No change"
+
+        batteries.append({
+            "id": f"B{j}",
+            "node": f"TS_B{j}",
+            "initial": initial,
+            "final": final,
+            "delta": delta,
+            "soc_pct": round(pct, 1),
+            "action": action,
+        })
+    return batteries
+
+
+def build_summary(g_vars, s_vars):
+    """High-level energy balance summary."""
+    total_gen = sum(int(g_vars[i].X) for i in range(NUM_SOURCES))
+    total_discharge = 0
+    for j in range(NUM_BATTERIES):
+        final = int(s_vars[j].X)
+        initial = BATTERY_DATA[j]["initial_cap"]
+        total_discharge += max(0, initial - final)
+
+    total_supply = total_gen + total_discharge
+
+    return {
+        "total_generation": total_gen,
+        "total_discharge": total_discharge,
+        "total_supply": total_supply,
+        "total_demand": TOTAL_DEMAND,
+        "surplus": total_supply - TOTAL_DEMAND,
+    }
 
 # -----------------------------------------------------------
 # MAIN (debug mode)
