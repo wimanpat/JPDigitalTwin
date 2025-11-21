@@ -10,6 +10,9 @@ app = Flask(__name__)
 app.secret_key = "some_random_secret_key"
 
 
+# ================================
+# PAGE ROUTES
+# ================================
 @app.route("/")
 def command_center():
     return render_template("command_center.html", active="command")
@@ -30,33 +33,65 @@ def settings():
     return render_template("settings.html", active="settings")
 
 
+# ================================
+# SET SOLVER
+# ================================
 @app.route("/set-solver", methods=["POST"])
 def set_solver():
     session["solver"] = request.json.get("solver", "gurobi")
     return jsonify({"ok": True})
 
 
+# ================================
+# RUN SOLVER + SAVE TOPOLOGY
+# ================================
 @app.route("/run-solver", methods=["POST"])
 def run_solver():
 
     solver = session.get("solver", "gurobi")
 
     try:
+        # Select solver
         if solver == "gurobi":
-            return jsonify(run_gurobi_output())
-
+            result = run_gurobi_output()
         elif solver == "cqm":
-            return jsonify(run_cqm_output())
-
+            result = run_cqm_output()
         elif solver == "nlq":
-            return jsonify(run_nlq_output())
-
+            result = run_nlq_output()
         else:
-            return jsonify(run_dummy_output())
+            result = run_dummy_output()
+
+        # If failed, return
+        if not result.get("ok"):
+            return jsonify(result)
+
+        # SAVE LATEST GRID (for topology page)
+        session["latest_topology"] = {
+            "nodes": result.get("nodes", {}),
+            "flows": result.get("flows", [])
+        }
+
+        return jsonify(result)
 
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)})
 
 
+# ================================
+# GET TOPOLOGY FOR TOPOLOGY VIEW
+# ================================
+@app.route("/get-topology")
+def get_topology():
+    topo = session.get("latest_topology")
+
+    if not topo:
+        return jsonify({"ok": False, "error": "No solved topology available yet."})
+
+    return jsonify({"ok": True, **topo})
+
+
+# ================================
+# MAIN
+# ================================
 if __name__ == "__main__":
     app.run(debug=True)

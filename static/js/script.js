@@ -80,39 +80,62 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             execOutput.innerHTML = data.actions.map(a => "• " + a).join("<br>");
-            renderGridSVG(data.nodes, data.flows);
+            renderGridSVG(data.nodes, data.primary_edges);
+
         });
     }
 
 
     // ===================== GRID RENDERING ======================
-    function renderGridSVG(nodes, flows) {
-        if (!mapBox || !nodes) return;
+    function renderGridSVG(nodes, edges) {
+    if (!mapBox || !nodes) return;
 
-        let svg = `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">`;
+    let svg = `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">`;
 
-        flows.forEach(f => {
-            const s = nodes[f.src];
-            const d = nodes[f.dst];
-            if (!s || !d) return;
+    // Draw edges
+    edges.forEach(e => {
+        const s = nodes[e[0]];
+        const d = nodes[e[1]];
+        svg += `
+            <line x1="${s.x}" y1="${s.y}"
+                  x2="${d.x}" y2="${d.y}"
+                  stroke="#888" stroke-width="3" />
+        `;
+    });
 
-            svg += `
-                <line x1="${s.x}" y1="${s.y}"
-                      x2="${d.x}" y2="${d.y}"
-                      stroke="red" stroke-width="3" />
-            `;
-        });
-
-        for (const id in nodes) {
-            const n = nodes[id];
-            svg += `
-                <circle cx="${n.x}" cy="${n.y}" r="10" fill="#333"></circle>
-                <text x="${n.x + 14}" y="${n.y + 4}" font-size="12">${id}</text>
-            `;
-        }
-
-        svg += "</svg>";
-        mapBox.innerHTML = svg;
+    // Draw nodes
+    for (const id in nodes) {
+        const n = nodes[id];
+        svg += `
+            <circle cx="${n.x}" cy="${n.y}" r="10" fill="#000"></circle>
+            <text x="${n.x + 14}" y="${n.y + 4}" font-size="12">${id}</text>
+        `;
     }
 
+    svg += "</svg>";
+    mapBox.innerHTML = svg;
+}
+
+
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    // ---- SIDEBAR NAVIGATION ----
+    document.querySelectorAll(".nav-item").forEach(item => {
+        item.addEventListener("click", () => {
+            const link = item.dataset.link;
+            if (link) window.location.href = link;
+        });
+    });
+
+    // ---- FIX: CENTER ACTION CARD NAVIGATION ----
+    document.querySelectorAll(".action-card").forEach(card => {
+        card.addEventListener("click", () => {
+            const link = card.dataset.link;
+            if (link) window.location.href = link;
+        });
+    });
+
+});
+

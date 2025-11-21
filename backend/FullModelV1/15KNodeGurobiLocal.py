@@ -225,21 +225,80 @@ def explain_cost_logic(g_vars):
 # -----------------------------------------------------------
 
 def get_node_positions():
-    positions = {}
+    return {
 
-    # Sources
-    for i in range(NUM_SOURCES):
-        positions[f"TS_S{i}"] = {"x": 80 + i * 110, "y": 60, "type": SOURCE_DATA[i]["type"]}
+        # ============================================================
+        # GENERATION (Left side vertical)
+        # ============================================================
+        "TS_S0": {"x": 150, "y": 80,  "type": "Gen"},
+        "TS_S1": {"x": 150, "y": 150, "type": "Gen"},
+        "TS_S2": {"x": 150, "y": 220, "type": "Gen"},
+        "TS_S3": {"x": 150, "y": 290, "type": "Gen"},
+        "TS_S4": {"x": 150, "y": 360, "type": "Gen"},
+        "TS_S5": {"x": 150, "y": 430, "type": "Gen"},
+        "TS_S6": {"x": 150, "y": 500, "type": "Gen"},
+        "TS_S7": {"x": 150, "y": 570, "type": "Gen"},
 
-    # Batteries
-    for j in range(NUM_BATTERIES):
-        positions[f"TS_B{j}"] = {"x": 250 + j * 200, "y": 200, "type": "Battery"}
+        # ============================================================
+        # SUBSTATION BUSES / TRANSFORMERS (Center spine)
+        # ============================================================
+        "TS_B0": {"x": 350, "y": 250, "type": "Bus"},
+        "TS_B1": {"x": 350, "y": 400, "type": "Bus"},
 
-    # Loads
-    for k in range(NUM_SINK_NODES):
-        positions[f"TS_D{k}"] = {"x": 50 + k * 65, "y": 360, "type": "Load"}
+        # ============================================================
+        # LOADS / FEEDERS (Right side)
+        # ============================================================
+        "TS_D0": {"x": 600, "y": 80,  "type": "Load"},
+        "TS_D1": {"x": 600, "y": 130, "type": "Load"},
+        "TS_D2": {"x": 600, "y": 180, "type": "Load"},
+        "TS_D3": {"x": 600, "y": 230, "type": "Load"},
+        "TS_D4": {"x": 600, "y": 280, "type": "Load"},
+        "TS_D5": {"x": 600, "y": 330, "type": "Load"},
+        "TS_D6": {"x": 600, "y": 380, "type": "Load"},
+        "TS_D7": {"x": 600, "y": 430, "type": "Load"},
+        "TS_D8": {"x": 600, "y": 480, "type": "Load"},
+        "TS_D9": {"x": 600, "y": 530, "type": "Load"},
+        "TS_D10": {"x": 750, "y": 200, "type": "Load"},
+        "TS_D11": {"x": 750, "y": 260, "type": "Load"},
+        "TS_D12": {"x": 750, "y": 320, "type": "Load"},
+        "TS_D13": {"x": 750, "y": 380, "type": "Load"},
+        "TS_D14": {"x": 750, "y": 440, "type": "Load"},
+    }
 
-    return positions
+def get_primary_edges():
+    """Defines the real electrical one-line topology, not solver flows"""
+    return [
+        # GENERATORS FEED SUBSTATION BUSES
+        ("TS_S0", "TS_B0"),
+        ("TS_S1", "TS_B0"),
+        ("TS_S2", "TS_B0"),
+        ("TS_S3", "TS_B0"),
+
+        ("TS_S4", "TS_B1"),
+        ("TS_S5", "TS_B1"),
+        ("TS_S6", "TS_B1"),
+        ("TS_S7", "TS_B1"),
+
+        # BUSES FEED LOAD BLOCKS
+        ("TS_B0", "TS_D0"),
+        ("TS_B0", "TS_D1"),
+        ("TS_B0", "TS_D2"),
+        ("TS_B0", "TS_D3"),
+        ("TS_B0", "TS_D4"),
+        ("TS_B0", "TS_D5"),
+
+        ("TS_B1", "TS_D6"),
+        ("TS_B1", "TS_D7"),
+        ("TS_B1", "TS_D8"),
+        ("TS_B1", "TS_D9"),
+        ("TS_B1", "TS_D10"),
+        ("TS_B1", "TS_D11"),
+        ("TS_B1", "TS_D12"),
+        ("TS_B1", "TS_D13"),
+        ("TS_B1", "TS_D14"),
+    ]
+
+
 
 
 # -----------------------------------------------------------
@@ -247,22 +306,17 @@ def get_node_positions():
 # -----------------------------------------------------------
 
 def build_frontend_result(model, g_vars, s_vars, x_vars):
-
-    nodes = get_node_positions()
-    flows = get_visual_flows(x_vars)
-
-    actions = (
-        describe_generators(g_vars)
-        + describe_batteries(s_vars)
-        + describe_major_flows(x_vars)
-        + explain_cost_logic(g_vars)
-    )
-
     return {
         "ok": True,
-        "nodes": nodes,
-        "flows": flows,
-        "actions": actions
+        "nodes": get_node_positions(),
+        "primary_edges": get_primary_edges(),
+        "flows": get_visual_flows(x_vars),
+        "actions": (
+            describe_generators(g_vars)
+            + describe_batteries(s_vars)
+            + describe_major_flows(x_vars)
+            + explain_cost_logic(g_vars)
+        )
     }
 
 

@@ -6,36 +6,120 @@
 
 <div class="topology-grid">
 
+    <!-- LEFT COLUMN: STATIC INFO + FILTERS -->
     <div class="left-column">
+
         <div class="card">
             <h3>Structural Summary</h3>
-            <p><b>Total Lines:</b> 28</p>
-            <p><b>Total Transformers:</b> 4</p>
-            <p><b>Total Load (Peak):</b> 450 MW</p>
+            <p><b>Total Lines:</b> <span id="summary-lines">–</span></p>
+            <p><b>Total Transformers:</b> <span id="summary-transformers">–</span></p>
+            <p><b>Total Load (Peak):</b> <span id="summary-load">–</span></p>
         </div>
 
         <div class="card">
             <h3>Asset Filter</h3>
-            <div class="checkbox"><input type="checkbox"> Generation Assets</div>
-            <div class="checkbox"><input type="checkbox"> Storage Nodes</div>
-            <div class="checkbox"><input type="checkbox"> Consumption Load</div>
-            <div class="checkbox"><input type="checkbox"> Distribution Buses</div>
+
+            <label class="checkbox">
+                <input type="checkbox" id="filter-generation" checked> Generation Assets
+            </label>
+
+            <label class="checkbox">
+                <input type="checkbox" id="filter-storage" checked> Storage Nodes
+            </label>
+
+            <label class="checkbox">
+                <input type="checkbox" id="filter-load" checked> Consumption Load
+            </label>
+
+            <label class="checkbox">
+                <input type="checkbox" id="filter-bus" checked> Distribution Buses
+            </label>
+
         </div>
+
     </div>
 
+    <!-- RIGHT COLUMN: DYNAMIC GRID -->
     <div class="right-column">
         <div class="card large">
             <h3>Detailed One-Line Diagram</h3>
-            <div class="diagram-area">
-                <svg width="100%" height="100%">
-                    <line x1="80" y1="100" x2="180" y2="150" stroke="#bbb" stroke-width="2" />
-                    <circle cx="80" cy="100" r="6" fill="black" />
-                    <circle cx="180" cy="150" r="6" fill="black" />
-                </svg>
+
+            <div id="topologyDiagram" class="diagram-area">
+                <p style="color:#888; padding:20px;">Grid will load automatically after model runs...</p>
             </div>
         </div>
     </div>
 
 </div>
+
+<!-- ========================= -->
+<!-- TOPOLOGY VIEW JAVASCRIPT -->
+<!-- ========================= -->
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+
+    const diagram = document.getElementById("topologyDiagram");
+
+    // Fetch newest topology data from Flask
+    const res = await fetch("/get-topology");
+    const data = await res.json();
+
+    if (!data.ok) {
+        diagram.innerHTML = `<p style="color:red;">${data.error}</p>`;
+        return;
+    }
+
+    renderTopologyDiagram(data.nodes, data.flows);
+
+    // Populate quick summary
+    document.getElementById("summary-lines").textContent = data.flows.length;
+    document.getElementById("summary-transformers").textContent = 2;  // optional
+    document.getElementById("summary-load").textContent = "450 MW";
+});
+
+
+// ===========================
+//   Draw One-Line SVG
+// ===========================
+function renderTopologyDiagram(nodes, flows) {
+    const container = document.getElementById("topologyDiagram");
+
+    let svg = `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">`;
+
+    // Draw flows (lines)
+    flows.forEach(f => {
+        const s = nodes[f.src];
+        const d = nodes[f.dst];
+        if (!s || !d) return;
+
+        svg += `
+            <line x1="${s.x}" y1="${s.y}"
+                  x2="${d.x}" y2="${d.y}"
+                  stroke="#aaa" stroke-width="2" />
+        `;
+    });
+
+    // Draw nodes (circles + labels)
+    for (const id in nodes) {
+        const n = nodes[id];
+        let color = "#000";
+
+        if (n.type === "Solar" || n.type === "Wind" || n.type === "Nuclear" || n.type === "Thermal" || n.type === "Hydro")
+            color = "#1e90ff";  // Blue for generators
+        else if (n.type === "Battery")
+            color = "#ff9800";  // Orange for storage
+        else if (n.type === "Load")
+            color = "#c62828";  // Red for consumption
+
+        svg += `
+            <circle cx="${n.x}" cy="${n.y}" r="10" fill="${color}"></circle>
+            <text x="${n.x + 14}" y="${n.y + 4}" font-size="12">${id}</text>
+        `;
+    }
+
+    svg += "</svg>";
+    container.innerHTML = svg;
+}
+</script>
 
 {% endblock %}
