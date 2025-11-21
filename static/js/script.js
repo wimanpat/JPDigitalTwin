@@ -1,34 +1,96 @@
 document.addEventListener("DOMContentLoaded", () => {
+
+    // ===================== SIDEBAR NAVIGATION ======================
+    const navItems = document.querySelectorAll(".nav-item");
+    navItems.forEach(item => {
+        const text = item.textContent.trim();
+
+        if (text === "Command Center") item.onclick = () => window.location.href = "/";
+        if (text === "Topology View") item.onclick = () => window.location.href = "/topology";
+        if (text === "Operations View") item.onclick = () => window.location.href = "/operations";
+        if (text === "System Settings") item.onclick = () => window.location.href = "/settings";
+    });
+
+
+    // ===================== SETTINGS PAGE TABS ======================
+    const tabs = document.querySelectorAll(".settings-tab");
+    const panels = document.querySelectorAll(".settings-content");
+
+    tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            tabs.forEach(t => t.classList.remove("active"));
+            panels.forEach(p => p.classList.remove("active"));
+
+            tab.classList.add("active");
+            document.getElementById(`tab-${tab.dataset.tab}`).classList.add("active");
+        });
+    });
+
+
+    // ===================== THEME SWITCHER ======================
+    const themeSelector = document.getElementById("themeSelector");
+    const savedTheme = localStorage.getItem("theme");
+
+    if (savedTheme === "dark") {
+        document.body.classList.add("dark-mode");
+        if (themeSelector) themeSelector.value = "dark";
+    }
+
+    if (themeSelector) {
+        themeSelector.addEventListener("change", () => {
+            if (themeSelector.value === "dark") {
+                document.body.classList.add("dark-mode");
+                localStorage.setItem("theme", "dark");
+            } else {
+                document.body.classList.remove("dark-mode");
+                localStorage.setItem("theme", "light");
+            }
+        });
+    }
+
+
+    // ===================== SOLVER SELECTOR DROPDOWN ======================
+    const solverSelector = document.getElementById("solverSelector");
+    if (solverSelector) {
+        solverSelector.addEventListener("change", async () => {
+            await fetch("/set-solver", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ solver: solverSelector.value })
+            });
+        });
+    }
+
+
+    // ===================== EXECUTE SOLVER BUTTON ======================
     const execBtn = document.getElementById("executeBtn");
     const execOutput = document.getElementById("execOutput");
     const mapBox = document.getElementById("gridMap");
 
-    if (!execBtn) return;
+    if (execBtn) {
+        execBtn.addEventListener("click", async () => {
+            execOutput.textContent = "Running solver...";
 
-    execBtn.addEventListener("click", async () => {
-        execOutput.textContent = "Running solver...";
+            const res = await fetch("/run-solver", { method: "POST" });
+            const data = await res.json();
 
-        const res = await fetch("/run-solver", { method: "POST" });
-        const data = await res.json();
+            if (!data.ok) {
+                execOutput.textContent = "Error: " + data.error;
+                return;
+            }
 
-        if (!data.ok) {
-            execOutput.textContent = "Error: " + data.error;
-            return;
-        }
+            execOutput.innerHTML = data.actions.map(a => "• " + a).join("<br>");
+            renderGridSVG(data.nodes, data.flows);
+        });
+    }
 
-        // Show actions
-        execOutput.innerHTML = data.actions.map(a => "• " + a).join("<br>");
 
-        // Draw the grid
-        renderGridSVG(data.nodes, data.flows);
-    });
-
+    // ===================== GRID RENDERING ======================
     function renderGridSVG(nodes, flows) {
         if (!mapBox || !nodes) return;
 
         let svg = `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">`;
 
-        // Draw flows
         flows.forEach(f => {
             const s = nodes[f.src];
             const d = nodes[f.dst];
@@ -41,7 +103,6 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
         });
 
-        // Draw nodes
         for (const id in nodes) {
             const n = nodes[id];
             svg += `
@@ -53,4 +114,5 @@ document.addEventListener("DOMContentLoaded", () => {
         svg += "</svg>";
         mapBox.innerHTML = svg;
     }
+
 });
