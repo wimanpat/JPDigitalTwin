@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     // ======================================================================
-    // 1. SIDEBAR NAVIGATION (LEFT MENU)
+    // 1. SIDEBAR NAVIGATION
     // ======================================================================
     document.querySelectorAll(".nav-item").forEach(item => {
         item.addEventListener("click", () => {
@@ -10,9 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-
     // ======================================================================
-    // 2. ACTION-CARD NAVIGATION (COMMAND CENTER BUTTONS)
+    // 2. ACTION-CARD NAVIGATION
     // ======================================================================
     document.querySelectorAll(".action-card").forEach(card => {
         card.addEventListener("click", () => {
@@ -20,7 +19,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (target) window.location.href = target;
         });
     });
-
 
     // ======================================================================
     // 3. SETTINGS PAGE TABS
@@ -39,20 +37,17 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-
     // ======================================================================
     // 4. THEME SWITCHER
     // ======================================================================
     const themeSelector = document.getElementById("themeSelector");
 
-    // Load saved theme
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "dark") {
         document.body.classList.add("dark-mode");
         if (themeSelector) themeSelector.value = "dark";
     }
 
-    // When changed
     if (themeSelector) {
         themeSelector.addEventListener("change", () => {
             if (themeSelector.value === "dark") {
@@ -65,9 +60,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-
     // ======================================================================
-    // 5. SOLVER SELECTION (SETTINGS → Solver drop-down)
+    // 5. SOLVER SELECTOR
     // ======================================================================
     const solverSelector = document.getElementById("solverSelector");
 
@@ -81,9 +75,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-
     // ======================================================================
-    // 6. EXECUTE SOLVER BUTTON
+    // 6. EXECUTE SOLVER + DRAW GRAPH
     // ======================================================================
     const execBtn = document.getElementById("executeBtn");
     const execOutput = document.getElementById("execOutput");
@@ -101,51 +94,68 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // Show readable output
+            // Show textual actions
             execOutput.innerHTML = data.actions.map(a => "• " + a).join("<br>");
 
-            // Draw primary electrical topology
+            // Render grid graph
             renderGridSVG(data.nodes, data.primary_edges);
         });
     }
 
-
 // ======================================================================
-// FUNCTIONAL SVG RENDERER WITH PAN + ZOOM
+// CLEAN + COLORED + INTERACTIVE GRID RENDERER
 // ======================================================================
 function renderGridSVG(nodes, edges) {
     if (!mapBox || !nodes) return;
 
-    // Clear old SVG
+    // Clear previous svg
     mapBox.innerHTML = "";
 
-    // Create <svg>
+    // Create SVG
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("width", "100%");
     svg.setAttribute("height", "100%");
     svg.setAttribute("viewBox", "0 0 1000 700");
-
-    // Enable zoom/pan
     svg.style.cursor = "grab";
+
     enablePanZoom(svg);
 
-    // === Tooltip Div (HTML overlay) ===
+    // Tooltip overlay
     const tooltip = document.createElement("div");
     tooltip.style.position = "absolute";
-    tooltip.style.padding = "6px 10px";
-    tooltip.style.border = "1px solid #444";
-    tooltip.style.background = "#fff";
-    tooltip.style.fontSize = "12px";
     tooltip.style.display = "none";
-    tooltip.style.pointerEvents = "none";
+    tooltip.style.padding = "6px 10px";
+    tooltip.style.background = "#fff";
+    tooltip.style.border = "1px solid #444";
     tooltip.style.borderRadius = "4px";
-    tooltip.style.zIndex = "50";
+    tooltip.style.fontSize = "12px";
+    tooltip.style.pointerEvents = "none";
+    tooltip.style.zIndex = "10";
+
     mapBox.style.position = "relative";
     mapBox.appendChild(tooltip);
 
-    // ------------------------------
+    // Color palette
+    function getNodeColor(type) {
+        switch (type) {
+            case "Gen":
+            case "Solar": return "#f4d03f";
+            case "Wind": return "#5dade2";
+            case "Nuclear": return "#a569bd";
+            case "Thermal": return "#e67e22";
+
+            case "Bus":
+            case "Storage": return "#58d68d";
+
+            case "Railway": return "#16a085";
+            case "Factory": return "#c0392b";
+            case "Residential": return "#7f8c8d";
+
+            default: return "#000";
+        }
+    }
+
     // Draw edges
-    // ------------------------------
     edges.forEach(([src, dst]) => {
         const s = nodes[src];
         const d = nodes[dst];
@@ -156,140 +166,105 @@ function renderGridSVG(nodes, edges) {
         line.setAttribute("y1", s.y);
         line.setAttribute("x2", d.x);
         line.setAttribute("y2", d.y);
-        line.setAttribute("stroke", "#888");
+        line.setAttribute("stroke", "#999");
         line.setAttribute("stroke-width", "3");
         svg.appendChild(line);
     });
-    // ======================================================================
-    // 7. SVG GRID RENDERER  (Topology View + Command Center Snapshot)
-    // ======================================================================
-    function getNodeColor(type) {
-    switch (type) {
-        case "Solar": return "#f4d03f";          // Yellow
-        case "Wind": return "#5dade2";           // Blue
-        case "Nuclear": return "#a569bd";        // Purple
-        case "Thermal": return "#e67e22";        // Orange
-        case "Storage": return "#58d68d";        // Green
-        case "Railway": return "#16a085";        // Teal
-        case "Factory": return "#c0392b";        // Red
-        case "Residential": return "#7f8c8d";    // Gray
-        default: return "#000000";               // Black fallback
-    }
-}
 
-
-    function renderGridSVG(nodes, edges) {
-        if (!mapBox || !nodes) return;
-
-    // ------------------------------
     // Draw nodes
-    // ------------------------------
     for (const id in nodes) {
         const n = nodes[id];
+        const color = getNodeColor(n.type);
 
-        // Node circle
+        // Circle
         const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         circle.setAttribute("cx", n.x);
         circle.setAttribute("cy", n.y);
-        circle.setAttribute("r", 10);
-        circle.setAttribute("fill", "black");
+        circle.setAttribute("r", 12);
+        circle.setAttribute("fill", color);
+        circle.setAttribute("stroke", "#222");
+        circle.setAttribute("stroke-width", "2");
 
-        // Add hover tooltip behavior
+        // Tooltip behavior
         circle.addEventListener("mousemove", (e) => {
             tooltip.style.display = "block";
+            tooltip.style.left = (e.offsetX + 15) + "px";
+            tooltip.style.top = (e.offsetY + 15) + "px";
 
             tooltip.innerHTML = `
                 <b>${id}</b><br>
                 Type: ${n.type}<br>
-                X: ${n.x}, Y: ${n.y}
+                Position: (${n.x}, ${n.y})
             `;
-
-            tooltip.style.left = (e.offsetX + 15) + "px";
-            tooltip.style.top = (e.offsetY + 15) + "px";
         });
 
         circle.addEventListener("mouseleave", () => {
             tooltip.style.display = "none";
         });
-        // Draw nodes (circles + labels)
-        for (const id in nodes) {
-            const n = nodes[id];
-            const color = getNodeColor(n.type);
-
-        svg += `
-    <circle cx="${n.x}" cy="${n.y}" r="12" fill="${color}" stroke="#222" stroke-width="2"></circle>
-    <text x="${n.x + 18}" y="${n.y + 4}" font-size="13" fill="#000">${id}</text>
-        `;
-
-        }
 
         svg.appendChild(circle);
 
-        // Node label
+        // Label
         const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        label.setAttribute("x", n.x + 14);
+        label.setAttribute("x", n.x + 16);
         label.setAttribute("y", n.y + 4);
         label.setAttribute("font-size", "12");
+        label.setAttribute("fill", "#000");
         label.textContent = id;
-
         svg.appendChild(label);
     }
 
     mapBox.appendChild(svg);
 }
 
-function enablePanZoom(svg) {
-    let isPanning = false;
-    let start = { x: 0, y: 0 };
-    let viewBox = { x: 0, y: 0, w: 1000, h: 700 };
 
-    svg.addEventListener("mousedown", (e) => {
-        isPanning = true;
-        start.x = e.clientX;
-        start.y = e.clientY;
-        svg.style.cursor = "grabbing";
-    });
+    // ======================================================================
+    // 8. PAN + ZOOM
+    // ======================================================================
+    function enablePanZoom(svg) {
+        let isPanning = false;
+        let start = { x: 0, y: 0 };
+        let view = { x: 0, y: 0, w: 1000, h: 700 };
 
-    svg.addEventListener("mousemove", (e) => {
-        if (!isPanning) return;
+        svg.addEventListener("mousedown", (e) => {
+            isPanning = true;
+            start.x = e.clientX;
+            start.y = e.clientY;
+            svg.style.cursor = "grabbing";
+        });
 
-        const dx = (start.x - e.clientX) * (viewBox.w / svg.clientWidth);
-        const dy = (start.y - e.clientY) * (viewBox.h / svg.clientHeight);
+        svg.addEventListener("mousemove", (e) => {
+            if (!isPanning) return;
+            const dx = (start.x - e.clientX) * (view.w / svg.clientWidth);
+            const dy = (start.y - e.clientY) * (view.h / svg.clientHeight);
 
-        viewBox.x += dx;
-        viewBox.y += dy;
+            view.x += dx;
+            view.y += dy;
 
-        svg.setAttribute("viewBox", `${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`);
+            svg.setAttribute("viewBox", `${view.x} ${view.y} ${view.w} ${view.h}`);
+            start.x = e.clientX;
+            start.y = e.clientY;
+        });
 
-        start.x = e.clientX;
-        start.y = e.clientY;
-    });
+        svg.addEventListener("mouseup", () => {
+            isPanning = false;
+            svg.style.cursor = "grab";
+        });
 
-    svg.addEventListener("mouseup", () => {
-        isPanning = false;
-        svg.style.cursor = "grab";
-    });
+        svg.addEventListener("wheel", (e) => {
+            e.preventDefault();
 
-    svg.addEventListener("mouseleave", () => {
-        isPanning = false;
-        svg.style.cursor = "grab";
-    });
+            const zoom = 1.1;
+            if (e.deltaY < 0) {
+                view.w /= zoom;
+                view.h /= zoom;
+            } else {
+                view.w *= zoom;
+                view.h *= zoom;
+            }
 
-    svg.addEventListener("wheel", (e) => {
-        e.preventDefault();
-
-        const zoomFactor = 1.1;
-        if (e.deltaY < 0) {
-            viewBox.w /= zoomFactor;
-            viewBox.h /= zoomFactor;
-        } else {
-            viewBox.w *= zoomFactor;
-            viewBox.h *= zoomFactor;
-        }
-
-        svg.setAttribute("viewBox", `${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`);
-    });
-}
-
+            svg.setAttribute("viewBox", `${view.x} ${view.y} ${view.w} ${view.h}`);
+        });
+    }
 
 });
