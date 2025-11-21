@@ -1,18 +1,30 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    // ===================== SIDEBAR NAVIGATION ======================
-    const navItems = document.querySelectorAll(".nav-item");
-    navItems.forEach(item => {
-        const text = item.textContent.trim();
-
-        if (text === "Command Center") item.onclick = () => window.location.href = "/";
-        if (text === "Topology View") item.onclick = () => window.location.href = "/topology";
-        if (text === "Operations View") item.onclick = () => window.location.href = "/operations";
-        if (text === "System Settings") item.onclick = () => window.location.href = "/settings";
+    // ======================================================================
+    // 1. SIDEBAR NAVIGATION (LEFT MENU)
+    // ======================================================================
+    document.querySelectorAll(".nav-item").forEach(item => {
+        item.addEventListener("click", () => {
+            const target = item.dataset.link;
+            if (target) window.location.href = target;
+        });
     });
 
 
-    // ===================== SETTINGS PAGE TABS ======================
+    // ======================================================================
+    // 2. ACTION-CARD NAVIGATION (COMMAND CENTER BUTTONS)
+    // ======================================================================
+    document.querySelectorAll(".action-card").forEach(card => {
+        card.addEventListener("click", () => {
+            const target = card.dataset.link;
+            if (target) window.location.href = target;
+        });
+    });
+
+
+    // ======================================================================
+    // 3. SETTINGS PAGE TABS
+    // ======================================================================
     const tabs = document.querySelectorAll(".settings-tab");
     const panels = document.querySelectorAll(".settings-content");
 
@@ -22,20 +34,25 @@ document.addEventListener("DOMContentLoaded", () => {
             panels.forEach(p => p.classList.remove("active"));
 
             tab.classList.add("active");
-            document.getElementById(`tab-${tab.dataset.tab}`).classList.add("active");
+            const panel = document.getElementById(`tab-${tab.dataset.tab}`);
+            if (panel) panel.classList.add("active");
         });
     });
 
 
-    // ===================== THEME SWITCHER ======================
+    // ======================================================================
+    // 4. THEME SWITCHER
+    // ======================================================================
     const themeSelector = document.getElementById("themeSelector");
-    const savedTheme = localStorage.getItem("theme");
 
+    // Load saved theme
+    const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "dark") {
         document.body.classList.add("dark-mode");
         if (themeSelector) themeSelector.value = "dark";
     }
 
+    // When changed
     if (themeSelector) {
         themeSelector.addEventListener("change", () => {
             if (themeSelector.value === "dark") {
@@ -49,8 +66,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    // ===================== SOLVER SELECTOR DROPDOWN ======================
+    // ======================================================================
+    // 5. SOLVER SELECTION (SETTINGS → Solver drop-down)
+    // ======================================================================
     const solverSelector = document.getElementById("solverSelector");
+
     if (solverSelector) {
         solverSelector.addEventListener("change", async () => {
             await fetch("/set-solver", {
@@ -62,7 +82,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    // ===================== EXECUTE SOLVER BUTTON ======================
+    // ======================================================================
+    // 6. EXECUTE SOLVER BUTTON
+    // ======================================================================
     const execBtn = document.getElementById("executeBtn");
     const execOutput = document.getElementById("execOutput");
     const mapBox = document.getElementById("gridMap");
@@ -79,63 +101,47 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            // Show readable output
             execOutput.innerHTML = data.actions.map(a => "• " + a).join("<br>");
+
+            // Draw primary electrical topology
             renderGridSVG(data.nodes, data.primary_edges);
-
         });
     }
 
 
-    // ===================== GRID RENDERING ======================
+    // ======================================================================
+    // 7. SVG GRID RENDERER  (Topology View + Command Center Snapshot)
+    // ======================================================================
     function renderGridSVG(nodes, edges) {
-    if (!mapBox || !nodes) return;
+        if (!mapBox || !nodes) return;
 
-    let svg = `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">`;
+        let svg = `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">`;
 
-    // Draw edges
-    edges.forEach(e => {
-        const s = nodes[e[0]];
-        const d = nodes[e[1]];
-        svg += `
-            <line x1="${s.x}" y1="${s.y}"
-                  x2="${d.x}" y2="${d.y}"
-                  stroke="#888" stroke-width="3" />
-        `;
-    });
+        // Draw edges (lines)
+        edges.forEach(([src, dst]) => {
+            const s = nodes[src];
+            const d = nodes[dst];
+            if (!s || !d) return;
 
-    // Draw nodes
-    for (const id in nodes) {
-        const n = nodes[id];
-        svg += `
-            <circle cx="${n.x}" cy="${n.y}" r="10" fill="#000"></circle>
-            <text x="${n.x + 14}" y="${n.y + 4}" font-size="12">${id}</text>
-        `;
+            svg += `
+                <line x1="${s.x}" y1="${s.y}"
+                      x2="${d.x}" y2="${d.y}"
+                      stroke="#888" stroke-width="3" />
+            `;
+        });
+
+        // Draw nodes (circles + labels)
+        for (const id in nodes) {
+            const n = nodes[id];
+            svg += `
+                <circle cx="${n.x}" cy="${n.y}" r="10" fill="#000"></circle>
+                <text x="${n.x + 14}" y="${n.y + 4}" font-size="12">${id}</text>
+            `;
+        }
+
+        svg += `</svg>`;
+        mapBox.innerHTML = svg;
     }
 
-    svg += "</svg>";
-    mapBox.innerHTML = svg;
-}
-
-
 });
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    // ---- SIDEBAR NAVIGATION ----
-    document.querySelectorAll(".nav-item").forEach(item => {
-        item.addEventListener("click", () => {
-            const link = item.dataset.link;
-            if (link) window.location.href = link;
-        });
-    });
-
-    // ---- FIX: CENTER ACTION CARD NAVIGATION ----
-    document.querySelectorAll(".action-card").forEach(card => {
-        card.addEventListener("click", () => {
-            const link = card.dataset.link;
-            if (link) window.location.href = link;
-        });
-    });
-
-});
-
