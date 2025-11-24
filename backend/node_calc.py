@@ -31,6 +31,15 @@ def run_nlq_output():
     solver = importlib.import_module("backend.FullModelV1.15KNodeOnNLSampler")
     return solver.main()
 
+#IQM SOLVER
+def run_iqm_output():
+    solver = importlib.import_module("backend.solver_5node.run_5node_iqm")
+    return solver.main()
+
+#IonQ SOLVER
+def run_ionq_output():
+    solver = importlib.import_module("backend.solver_5node.run_5node_ionq")
+    return solver.main()
 
 # ====== FALLBACK ======
 def run_dummy_output():

@@ -60,19 +60,23 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ======================================================================
-    // 5. SOLVER SELECTOR
-    // ======================================================================
-    const solverSelector = document.getElementById("solverSelector");
-    if (solverSelector) {
-        solverSelector.addEventListener("change", async () => {
-            await fetch("/set-solver", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ solver: solverSelector.value })
-            });
+ // ======================================================================
+// 5. SOLVER SELECTOR — load current solver from data attribute if needed
+// ======================================================================
+const solverSelector = document.getElementById("solverSelector");
+
+if (solverSelector) {
+    // If Jinja pre-selected it, no action needed.
+    // Still listen for changes:
+    solverSelector.addEventListener("change", async () => {
+        await fetch("/set-solver", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ solver: solverSelector.value })
         });
-    }
+    });
+}
+
 
     // ======================================================================
     // 6. EXECUTE SOLVER BUTTON

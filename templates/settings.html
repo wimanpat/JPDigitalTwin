@@ -34,11 +34,27 @@
 <div class="settings-row">
     <label>Select Solver</label>
     <select id="solverSelector">
-        <option value="gurobi">Local Gurobi (CPU)</option>
-        <option value="cqm">D-Wave CQM (Hybrid Cloud)</option>
-        <option value="nlq">D-Wave Quantum Annealing</option>
-        <!--<option value="dummy">Dummy Test Solver (No Dependencies)</option> UNCOMMENT FOR DEVELOPMENT TESTING-->
-    </select>
+    <option value="gurobi" {% if saved_solver=='gurobi' %}selected{% endif %}>
+        Local Gurobi (CPU)
+    </option>
+
+    <option value="cqm" {% if saved_solver=='cqm' %}selected{% endif %}>
+        D-Wave CQM (Hybrid Cloud)
+    </option>
+
+    <option value="nlq" {% if saved_solver=='nlq' %}selected{% endif %}>
+        D-Wave Quantum Annealing
+    </option>
+
+    <option value="iqm" {% if saved_solver=='iqm' %}selected{% endif %}>
+        IQM-solver
+    </option>
+
+    <option value="ionq" {% if saved_solver=='ionq' %}selected{% endif %}>
+        IonQ-solver
+    </option>
+</select>
+
 </div>
 
 

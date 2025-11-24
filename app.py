@@ -3,8 +3,9 @@ from backend.node_calc import (
     run_gurobi_output,
     run_cqm_output,
     run_nlq_output,
-    run_dummy_output,
+    run_dummy_output, #run_iqm_output, run_ionq_output,
 )
+#from backend.solver_5node.run_5node_ionq import result
 
 app = Flask(__name__)
 app.secret_key = "some_random_secret_key"
@@ -30,7 +31,8 @@ def operations():
 
 @app.route("/settings")
 def settings():
-    return render_template("settings.html", active="settings")
+    saved = session.get("solver", "gurobi")
+    return render_template("settings.html", active="settings", saved_solver=saved)
 
 
 # ================================
@@ -58,6 +60,10 @@ def run_solver():
             result = run_cqm_output()
         elif solver == "nlq":
             result = run_nlq_output()
+        elif solver == "iqm":
+            result = run_iqm_output()
+        elif solver == "ionq":
+            result = run_ionq_output()
         else:
             result = run_dummy_output()
 
