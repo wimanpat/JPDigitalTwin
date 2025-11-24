@@ -1,4 +1,4 @@
-In this directory there is stored external solvers
+In this directory there is stored external solvers to not make conflicts
 
 ````commandline
  git clone https://github.com/NirajDayama/NirajDwave.git
